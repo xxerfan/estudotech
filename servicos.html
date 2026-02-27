@@ -4,31 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serviços - Xerfan Tech Lab</title>
-    <link rel="stylesheet" href="./css/style.css">
+        <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- AOS Animate On Scroll -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/standard.css">
+    <link rel="stylesheet" href="css/animations.css">
 </head>
-<body>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
 
-    <header class="header">
-        <div class="container header-content">
-            <a href="index.html" class="logo-container">
-                <img src="./img/logo.png" alt="Logo" class="logo-img" onerror="this.style.display='none'">
-            </a>
-            <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <nav class="nav-menu">
-                    <a href="index.html" class="nav-link">Início</a>
-                    <a href="produtos.html" class="nav-link">Produtos</a>
-                    <a href="servicos.html" class="nav-link text-orange">Serviços</a>
-                    <a href="portfolio.html" class="nav-link">Portfólio</a>
-                    <a href="sobre.html" class="nav-link">Sobre</a>
-                    <a href="contato.html" class="nav-link">Contato</a>
-                    <a href="agendamento.html" class="nav-link">Agendar</a>
-                </nav>
-                <button id="themeToggle" class="theme-toggle">🌙</button>
-            </div>
-        </div>
-    </header>
+    <!-- Header Component -->
+    <div id="header"></div>
 
-    <section class="hero-page">
+
+
+    <section class="hero-page mt-20">
         <div class="container">
             <h1 class="hero-page-title">Nossos Serviços</h1>
             <p class="hero-page-desc">Soluções completas em tecnologia para todas as suas necessidades.</p>
@@ -37,7 +37,7 @@
 
     <section class="section-padding">
         <div class="container grid-cards">
-            
+
             <div class="card" style="padding: 0;">
                 <div style="background: linear-gradient(to right, #3b82f6, #2563eb); padding: 2rem; color: white;">
                     <div class="card-icon" style="background: rgba(255,255,255,0.2); box-shadow: none;">💻</div>
@@ -200,7 +200,7 @@
             <div style="background: linear-gradient(to right, var(--blue-900), var(--orange-600)); border-radius: 2rem; padding: 4rem; text-align: center; color: white; box-shadow: var(--shadow-lg);">
                 <h2 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 1rem;">Pronto para Começar?</h2>
                 <p style="font-size: 1.25rem; margin-bottom: 2rem; color: var(--blue-100);">Entre em contato e solicite um orçamento sem compromisso</p>
-                
+
                 <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
                     <a href="agendamento.html" class="btn-primary btn-auto" style="background: white; color: var(--blue-900);">Agendar Serviço</a>
                     <a href="contato.html" class="btn-primary btn-auto">Falar com Especialista</a>
@@ -210,71 +210,15 @@
         </div>
     </section>
 
-<footer class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                
-                <div>
-                    <img src="./img/logo.png" alt="Xerfan Tech Lab" style="height: 3rem; margin-bottom: 1rem; filter: brightness(0) invert(1);" onerror="this.style.display='none'">
-                    <p class="footer-text">
-                        Inovação em tecnologia ao seu alcance. Oferecemos os melhores serviços e produtos para facilitar o seu dia a dia e transformar o seu negócio.
-                    </p>
-                </div>
 
-                <div>
-                    <h4 class="footer-title">Links Rápidos</h4>
-                    <ul class="footer-list">
-                        <li><a href="index.html" class="footer-link">Início</a></li>
-                        <li><a href="produtos.html" class="footer-link">Produtos</a></li>
-                        <li><a href="servicos.html" class="footer-link">Serviços</a></li>
-                        <li><a href="portfolio.html" class="footer-link">Portfólio</a></li>
-                        <li><a href="sobre.html" class="footer-link">Sobre Nós</a></li>
-                    </ul>
-                </div>
+    <!-- Footer Component -->
+    <div id="footer"></div>
 
-                <div>
-                    <h4 class="footer-title">Nossos Serviços</h4>
-                    <ul class="footer-list">
-                        <li>💻 Manutenção de PCs</li>
-                        <li>📱 Reparo de Smartphones</li>
-                        <li>🏠 Automação Residencial</li>
-                        <li>📷 Câmeras CFTV</li>
-                        <li>🎮 Conserto de Videogames</li>
-                    </ul>
-                </div>
 
-                <div>
-                    <h4 class="footer-title">Contato</h4>
-                    <ul class="footer-list">
-                        <li>📍 Rio de Janeiro, RJ - Brasil</li>
-                        <li>📞 <a href="tel:+5521984197719" class="footer-link">(21) 98419-7719</a></li>
-                        <li>📧 <a href="mailto:xxerfan@gmail.com" class="footer-link">xxerfan@gmail.com</a></li>
-                    </ul>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                        <a href="https://instagram.com/xerfantechlab" target="_blank" class="footer-link" style="font-size: 1.5rem; background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 0.5rem;">📷</a>
-                        <a href="https://wa.me/5521984197719" target="_blank" class="footer-link" style="font-size: 1.5rem; background: rgba(255,255,255,0.1); padding: 0.5rem; border-radius: 0.5rem;">💬</a>
-                    </div>
-                </div>
-
-            </div>
-            
-            <div class="footer-bottom">
-                <p>© 2026 Xerfan Tech Lab. Todos os direitos reservados.</p>
-            </div>
-        </div>
-    </footer>
     <a href="https://wa.me/5521984197719" target="_blank" class="whatsapp-float">
         <svg style="width: 2rem; height: 2rem; fill: currentColor;" viewBox="0 0 24 24"><path d="M12.031 21.033c-1.636 0-3.238-.439-4.636-1.27l-.333-.198-3.447.904.92-3.361-.217-.345A8.937 8.937 0 0 1 3.031 12c0-4.962 4.038-9 9-9s9 4.038 9-9 4.038 9-9 9zm4.846-6.19c-.265-.133-1.57-.775-1.815-.864-.244-.089-.422-.133-.599.133-.178.266-.688.864-.843 1.04-.155.178-.31.2-.576.067a7.288 7.288 0 0 1-2.148-1.325 8.01 8.01 0 0 1-1.487-1.865c-.155-.266-.016-.41.116-.543.118-.118.265-.31.398-.465.133-.155.178-.266.265-.443.089-.178.045-.333-.022-.465-.067-.133-.599-1.443-.82-1.975-.215-.515-.434-.445-.599-.453-.155-.008-.333-.008-.51-.008-.178 0-.466.067-.71.333-.244.266-.932.91-.932 2.218s.954 2.574 1.087 2.752c.133.178 1.876 2.863 4.545 4.016 2.669 1.154 2.669.776 3.157.732.488-.044 1.57-.643 1.792-1.264.222-.621.222-1.154.155-1.265-.066-.11-.243-.177-.509-.31z"/></svg>
     </a>
-    <script>
-        const themeToggle = document.getElementById('themeToggle'); const body = document.body; 
-        if (localStorage.getItem('theme') === 'dark') { body.classList.add('dark-theme'); themeToggle.textContent = '☀️'; }
-        themeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-theme'); 
-            if (body.classList.contains('dark-theme')) { localStorage.setItem('theme', 'dark'); themeToggle.textContent = '☀️'; } 
-            else { localStorage.setItem('theme', 'light'); themeToggle.textContent = '🌙'; }
-        });
-    </script>
+
+    <script src="js/main.js"></script>
 </body>
 </html>
