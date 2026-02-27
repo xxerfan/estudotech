@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Blog | Xerfan Tech Lab</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/standard.css">
+    
+    <!-- CSS para o editor -->
+    <style>
+        .editor-toolbar {
+            border: 2px solid #e5e7eb;
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            padding: 8px;
+            background: #f9fafb;
+        }
+        
+        .dark .editor-toolbar {
+            background: #374151;
+            border-color: #4b5563;
+        }
+        
+        .editor-content {
+            min-height: 300px;
+            border: 2px solid #e5e7eb;
+            border-radius: 0 0 8px 8px;
+            padding: 16px;
+            background: white;
+        }
+        
+        .dark .editor-content {
+            background: #1f2937;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+        
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            min-height: 44px;
+        }
+        
+        .dark .tag-input {
+            background: #374151;
+            border-color: #4b5563;
+        }
+        
+        .tag {
+            background: #f97316;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .tag .remove {
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .tag-input input {
+            border: none;
+            outline: none;
+            background: transparent;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .dark .tag-input input {
+            color: #f3f4f6;
+        }
+        
+        .post-card {
+            transition: all 0.3s ease;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-published {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-draft {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .status-archived {
+            background: #6b7280;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <img src="img/logo.png" alt="Xerfan Tech Lab" class="h-10 w-auto">
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-800 dark:text-white">Admin - Blog</h1>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Gerenciamento de Conteúdo</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="themeToggle" onclick="toggleTheme()" 
+                            class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        <span id="themeIcon">🌙</span>
+                    </button>
+                    <a href="index.html" class="btn btn-outline">
+                        <i class="fas fa-home mr-2"></i>Site
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Actions Bar -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">Posts do Blog</h2>
+                    <p class="text-gray-600 dark:text-gray-400">Gerencie seus artigos e conteúdo</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button id="btnNewPost" class="btn btn-primary">
+                        <i class="fas fa-plus mr-2"></i>Novo Post
+                    </button>
+                    <button id="btnRefresh" class="btn btn-outline">
+                        <i class="fas fa-sync-alt mr-2"></i>Atualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Posts List -->
+        <div id="postsContainer" class="space-y-6">
+            <div class="text-center py-12">
+                <i class="fas fa-spinner fa-spin text-4xl text-orange-500 mb-4"></i>
+                <p class="text-gray-600 dark:text-gray-400">Carregando posts...</p>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Modal de Edição -->
+    <div id="postModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 id="modalTitle" class="text-xl font-bold text-gray-800 dark:text-white">Novo Post</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <form id="postForm" class="space-y-6">
+                    <!-- Title -->
+                    <div>
+                        <label class="form-label">Título do Post</label>
+                        <input type="text" id="postTitle" class="form-input" placeholder="Digite o título do post" required>
+                    </div>
+                    
+                    <!-- Slug -->
+                    <div>
+                        <label class="form-label">URL Amigável</label>
+                        <input type="text" id="postSlug" class="form-input" placeholder="ex: meu-post-do-blog" required>
+                    </div>
+                    
+                    <!-- Category -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Categoria</label>
+                            <select id="postCategory" class="form-select" required>
+                                <option value="">Selecione uma categoria</option>
+                                <option value="Tecnologia">Tecnologia</option>
+                                <option value="Automação">Automação</option>
+                                <option value="Manutenção">Manutenção</option>
+                                <option value="Desenvolvimento">Desenvolvimento</option>
+                                <option value="Segurança">Segurança</option>
+                                <option value="Infraestrutura">Infraestrutura</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Status -->
+                        <div>
+                            <label class="form-label">Status</label>
+                            <select id="postStatus" class="form-select" required>
+                                <option value="draft">Rascunho</option>
+                                <option value="published">Publicado</option>
+                                <option value="archived">Arquivado</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Excerpt -->
+                    <div>
+                        <label class="form-label">Resumo</label>
+                        <textarea id="postExcerpt" class="form-textarea" rows="3" placeholder="Digite um breve resumo do post" required></textarea>
+                    </div>
+                    
+                    <!-- Featured Image -->
+                    <div>
+                        <label class="form-label">Imagem Destacada</label>
+                        <div class="flex items-center gap-4">
+                            <input type="url" id="postImage" class="form-input flex-1" placeholder="URL da imagem">
+                            <button type="button" id="btnUploadImage" class="btn btn-outline">
+                                <i class="fas fa-upload mr-2"></i>Upload
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Read Time -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Tempo de Leitura (minutos)</label>
+                            <input type="number" id="postReadTime" class="form-input" min="1" max="60" value="5">
+                        </div>
+                        
+                        <!-- Author -->
+                        <div>
+                            <label class="form-label">Autor</label>
+                            <input type="text" id="postAuthor" class="form-input" placeholder="Nome do autor" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Tags -->
+                    <div>
+                        <label class="form-label">Tags</label>
+                        <div id="tagsContainer" class="tag-input">
+                            <input type="text" id="tagInput" placeholder="Adicione tags e pressione Enter">
+                        </div>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div>
+                        <label class="form-label">Conteúdo do Post</label>
+                        <div class="editor-toolbar">
+                            <div class="flex items-center gap-2">
+                                <button type="button" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onclick="formatText('bold')">
+                                    <i class="fas fa-bold"></i>
+                                </button>
+                                <button type="button" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onclick="formatText('italic')">
+                                    <i class="fas fa-italic"></i>
+                                </button>
+                                <button type="button" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onclick="formatText('underline')">
+                                    <i class="fas fa-underline"></i>
+                                </button>
+                                <div class="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2"></div>
+                                <button type="button" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onclick="formatText('insertUnorderedList')">
+                                    <i class="fas fa-list-ul"></i>
+                                </button>
+                                <button type="button" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded" onclick="formatText('insertOrderedList')">
+                                    <i class="fas fa-list-ol"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="postContent" class="editor-content" contenteditable="true" data-placeholder="Digite o conteúdo do post aqui..."></div>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" id="btnSaveDraft" class="btn btn-outline">
+                    <i class="fas fa-save mr-2"></i>Salvar Rascunho
+                </button>
+                <button type="button" id="btnPublish" class="btn btn-primary">
+                    <i class="fas fa-paper-plane mr-2"></i>Publicar
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Blog Admin System
+        class BlogAdmin {
+            constructor() {
+                this.posts = [];
+                this.currentPost = null;
+                this.tags = [];
+                
+                this.init();
+            }
+            
+            async init() {
+                await this.loadPosts();
+                this.setupEventListeners();
+                this.renderPosts();
+                AOS.init();
+            }
+            
+            async loadPosts() {
+                try {
+                    const response = await fetch('tables/blog_posts');
+                    const data = await response.json();
+                    this.posts = data.data || [];
+                } catch (error) {
+                    console.error('Erro ao carregar posts:', error);
+                    // Dados de exemplo se a API não estiver disponível
+                    this.posts = [
+                        {
+                            id: '1',
+                            title: 'Como a Automação Residencial está Transformando os Lares Brasileiros',
+                            category: 'Automação',
+                            status: 'published',
+                            created_at: '2026-02-15T10:00:00.000Z',
+                            view_count: 125
+                        },
+                        {
+                            id: '2',
+                            title: 'Manutenção de Computadores: Guia Completo para Empresas',
+                            category: 'Manutenção',
+                            status: 'published',
+                            created_at: '2026-02-12T08:30:00.000Z',
+                            view_count: 89
+                        }
+                    ];
+                }
+            }
+            
+            setupEventListeners() {
+                document.getElementById('btnNewPost').addEventListener('click', () => this.openModal());
+                document.getElementById('btnRefresh').addEventListener('click', () => this.refreshPosts());
+                document.getElementById('closeModal').addEventListener('click', () => this.closeModal());
+                document.getElementById('btnSaveDraft').addEventListener('click', () => this.savePost('draft'));
+                document.getElementById('btnPublish').addEventListener('click', () => this.savePost('published'));
+                
+                // Tags system
+                const tagInput = document.getElementById('tagInput');
+                tagInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.addTag(e.target.value.trim());
+                        e.target.value = '';
+                    }
+                });
+                
+                // Auto-generate slug
+                document.getElementById('postTitle').addEventListener('input', (e) => {
+                    const slug = this.generateSlug(e.target.value);
+                    document.getElementById('postSlug').value = slug;
+                });
+                
+                // Close modal on background click
+                document.getElementById('postModal').addEventListener('click', (e) => {
+                    if (e.target.id === 'postModal') {
+                        this.closeModal();
+                    }
+                });
+            }
+            
+            renderPosts() {
+                const container = document.getElementById('postsContainer');
+                
+                if (this.posts.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-blog text-6xl text-gray-400 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-400 mb-2">Nenhum post encontrado</h3>
+                            <p class="text-gray-500 dark:text-gray-500">Clique em "Novo Post" para criar seu primeiro artigo</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const postsHTML = this.posts.map(post => `
+                    <div class="post-card bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-2">${post.title}</h3>
+                                <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                    <span><i class="fas fa-tag mr-1"></i>${post.category}</span>
+                                    <span><i class="fas fa-eye mr-1"></i>${post.view_count || 0} visualizações</span>
+                                    <span><i class="fas fa-calendar mr-1"></i>${new Date(post.created_at).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                            </div>
+                            <span class="status-badge status-${post.status}">${post.status.toUpperCase()}</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <button class="text-blue-500 hover:text-blue-600" onclick="blogAdmin.editPost('${post.id}')">
+                                    <i class="fas fa-edit mr-1"></i>Editar
+                                </button>
+                                <button class="text-green-500 hover:text-green-600" onclick="blogAdmin.duplicatePost('${post.id}')">
+                                    <i class="fas fa-copy mr-1"></i>Duplicar
+                                </button>
+                                <button class="text-red-500 hover:text-red-600" onclick="blogAdmin.deletePost('${post.id}')">
+                                    <i class="fas fa-trash mr-1"></i>Excluir
+                                </button>
+                            </div>
+                            <a href="#" class="text-orange-500 hover:text-orange-600" target="_blank">
+                                <i class="fas fa-external-link-alt mr-1"></i>Ver
+                            </a>
+                        </div>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = postsHTML;
+            }
+            
+            openModal(postId = null) {
+                this.currentPost = postId ? this.posts.find(p => p.id === postId) : null;
+                
+                const modal = document.getElementById('postModal');
+                const title = document.getElementById('modalTitle');
+                
+                title.textContent = this.currentPost ? 'Editar Post' : 'Novo Post';
+                
+                if (this.currentPost) {
+                    this.fillForm(this.currentPost);
+                } else {
+                    this.clearForm();
+                }
+                
+                modal.classList.remove('hidden');
+            }
+            
+            closeModal() {
+                document.getElementById('postModal').classList.add('hidden');
+                this.currentPost = null;
+                this.clearForm();
+            }
+            
+            fillForm(post) {
+                document.getElementById('postTitle').value = post.title || '';
+                document.getElementById('postSlug').value = post.slug || '';
+                document.getElementById('postCategory').value = post.category || '';
+                document.getElementById('postStatus').value = post.status || 'draft';
+                document.getElementById('postExcerpt').value = post.excerpt || '';
+                document.getElementById('postImage').value = post.featured_image || '';
+                document.getElementById('postReadTime').value = post.read_time || 5;
+                document.getElementById('postAuthor').value = post.author || '';
+                document.getElementById('postContent').innerHTML = post.content || '';
+                
+                // Load tags
+                this.tags = post.tags || [];
+                this.renderTags();
+            }
+            
+            clearForm() {
+                document.getElementById('postForm').reset();
+                document.getElementById('postContent').innerHTML = '';
+                this.tags = [];
+                this.renderTags();
+            }
+            
+            addTag(tagText) {
+                if (tagText && !this.tags.includes(tagText)) {
+                    this.tags.push(tagText);
+                    this.renderTags();
+                }
+            }
+            
+            removeTag(tagText) {
+                this.tags = this.tags.filter(tag => tag !== tagText);
+                this.renderTags();
+            }
+            
+            renderTags() {
+                const container = document.getElementById('tagsContainer');
+                const tagsHTML = this.tags.map(tag => `
+                    <span class="tag">
+                        ${tag}
+                        <i class="fas fa-times remove" onclick="blogAdmin.removeTag('${tag}')"></i>
+                    </span>
+                `).join('');
+                
+                container.innerHTML = tagsHTML + '<input type="text" id="tagInput" placeholder="Adicione tags e pressione Enter">';
+                
+                // Re-attach event listener
+                const newInput = container.querySelector('#tagInput');
+                newInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.addTag(e.target.value.trim());
+                        e.target.value = '';
+                    }
+                });
+            }
+            
+            generateSlug(text) {
+                return text
+                    .toLowerCase()
+                    .replace(/[^\w ]+/g, '')
+                    .replace(/ +/g, '-');
+            }
+            
+            async savePost(status) {
+                const formData = {
+                    title: document.getElementById('postTitle').value,
+                    slug: document.getElementById('postSlug').value,
+                    category: document.getElementById('postCategory').value,
+                    status: status,
+                    excerpt: document.getElementById('postExcerpt').value,
+                    content: document.getElementById('postContent').innerHTML,
+                    featured_image: document.getElementById('postImage').value,
+                    read_time: parseInt(document.getElementById('postReadTime').value),
+                    author: document.getElementById('postAuthor').value,
+                    tags: this.tags,
+                    updated_at: new Date().toISOString()
+                };
+                
+                if (this.currentPost) {
+                    formData.id = this.currentPost.id;
+                } else {
+                    formData.id = 'post-' + Date.now();
+                    formData.created_at = new Date().toISOString();
+                    formData.published_at = status === 'published' ? new Date().toISOString() : null;
+                    formData.view_count = 0;
+                }
+                
+                try {
+                    const method = this.currentPost ? 'PUT' : 'POST';
+                    const url = this.currentPost ? `tables/blog_posts/${this.currentPost.id}` : 'tables/blog_posts';
+                    
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    if (response.ok) {
+                        mostrarNotificacao('Post salvo com sucesso!', 'success');
+                        this.closeModal();
+                        await this.loadPosts();
+                        this.renderPosts();
+                    } else {
+                        throw new Error('Erro ao salvar post');
+                    }
+                } catch (error) {
+                    console.error('Erro ao salvar post:', error);
+                    mostrarNotificacao('Erro ao salvar post. Tente novamente.', 'error');
+                }
+            }
+            
+            async deletePost(postId) {
+                if (confirm('Tem certeza que deseja excluir este post?')) {
+                    try {
+                        const response = await fetch(`tables/blog_posts/${postId}`, {
+                            method: 'DELETE'
+                        });
+                        
+                        if (response.ok) {
+                            mostrarNotificacao('Post excluído com sucesso!', 'success');
+                            await this.loadPosts();
+                            this.renderPosts();
+                        }
+                    } catch (error) {
+                        console.error('Erro ao excluir post:', error);
+                        mostrarNotificacao('Erro ao excluir post.', 'error');
+                    }
+                }
+            }
+            
+            async refreshPosts() {
+                await this.loadPosts();
+                this.renderPosts();
+                mostrarNotificacao('Posts atualizados!', 'info');
+            }
+        }
+        
+        // Global functions
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            document.getElementById('postContent').focus();
+        }
+        
+        // Initialize
+        const blogAdmin = new BlogAdmin();
+        
+        // Theme toggle
+        function updateThemeIcon() {
+            const themeIcon = document.getElementById('themeIcon');
+            if (!themeIcon) return;
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            themeIcon.textContent = isDark ? '☀️' : '🌙';
+        }
+        
+        // Initialize theme
+        updateThemeIcon();
+        
+        // Theme observer
+        const observer = new MutationObserver(updateThemeIcon);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    </script>
+</body>
+</html>
