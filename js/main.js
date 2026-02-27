@@ -594,6 +594,7 @@ function adicionarRevelacaoScroll() {
 class FloatingChatBot {
     constructor() {
         this.isOpen = false;
+        this.apiEndpoint = window.CHATBOT_API_URL || '';
         this.responses = {
             'manutencao': {
                 keywords: ['manutencao', 'computador', 'notebook', 'conserto', 'reparo', 'pcdesktop'],
@@ -751,7 +752,7 @@ class FloatingChatBot {
         this.isOpen = false;
     }
     
-    sendMessage() {
+    async sendMessage() {
         const input = document.getElementById('chat-input');
         const message = input.value.trim();
         
@@ -759,16 +760,17 @@ class FloatingChatBot {
         
         this.addMessage(message, 'user');
         input.value = '';
-        
-        // Show typing indicator
         this.showTypingIndicator();
-        
-        // Simulate response delay
-        setTimeout(() => {
+
+        try {
+            const response = await this.getBotResponse(message);
             this.hideTypingIndicator();
-            const response = this.generateResponse(message);
             this.addMessage(response, 'bot');
-        }, 1000 + Math.random() * 1000);
+        } catch (error) {
+            console.error('Erro ao processar mensagem do chatbot:', error);
+            this.hideTypingIndicator();
+            this.addMessage('Não consegui responder agora. Tente novamente em alguns instantes.', 'bot');
+        }
     }
     
     addMessage(text, sender) {
@@ -823,6 +825,32 @@ class FloatingChatBot {
             indicator.remove();
         }
     }
+
+    async getBotResponse(message) {
+        if (this.apiEndpoint) {
+            try {
+                const response = await fetch(this.apiEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data?.response) {
+                        return data.response;
+                    }
+                }
+            } catch (error) {
+                console.warn('API do chatbot indisponível, usando fallback local.');
+            }
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 700 + Math.random() * 600));
+        return this.generateResponse(message);
+    }
     
     generateResponse(userMessage) {
         const message = userMessage.toLowerCase();
@@ -868,12 +896,16 @@ class FloatingChatBot {
         if (message) {
             this.addMessage(message, 'user');
             this.showTypingIndicator();
-            
-            setTimeout(() => {
-                this.hideTypingIndicator();
-                const response = this.generateResponse(message);
-                this.addMessage(response, 'bot');
-            }, 1000);
+
+            this.getBotResponse(message)
+                .then(response => {
+                    this.hideTypingIndicator();
+                    this.addMessage(response, 'bot');
+                })
+                .catch(() => {
+                    this.hideTypingIndicator();
+                    this.addMessage('Não consegui responder agora. Tente novamente em alguns instantes.', 'bot');
+                });
         }
     }
     
@@ -887,6 +919,112 @@ class FloatingChatBot {
         const messagesContainer = document.getElementById('chat-messages');
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
+}
+
+
+
+function normalizeText(text) {
+    return (text || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '');
+}
+
+function configurarBuscaFiltrosProdutos() {
+    const searchInput = document.getElementById('productSearchInput');
+    const categoryButtons = document.querySelectorAll('[data-product-category]');
+    const products = document.querySelectorAll('[data-product-item]');
+    const emptyState = document.getElementById('productsEmptyState');
+
+    if (!searchInput || !categoryButtons.length || !products.length) return;
+
+    let currentCategory = 'todos';
+
+    const updateButtonState = () => {
+        categoryButtons.forEach(button => {
+            const isActive = button.dataset.productCategory === currentCategory;
+            button.style.background = isActive ? 'var(--orange-500)' : 'var(--bg-card)';
+            button.style.color = isActive ? 'white' : 'var(--text-primary)';
+            button.style.border = isActive ? 'none' : '1px solid var(--border-color)';
+        });
+    };
+
+    const applyFilters = () => {
+        const query = normalizeText(searchInput.value.trim());
+        let visibleItems = 0;
+
+        products.forEach(product => {
+            const category = normalizeText(product.dataset.productCategory);
+            const text = normalizeText(product.textContent);
+            const matchesCategory = currentCategory === 'todos' || category.includes(normalizeText(currentCategory));
+            const matchesSearch = !query || text.includes(query);
+            const isVisible = matchesCategory && matchesSearch;
+
+            product.style.display = isVisible ? '' : 'none';
+            if (isVisible) visibleItems += 1;
+        });
+
+        if (emptyState) {
+            emptyState.style.display = visibleItems === 0 ? 'block' : 'none';
+        }
+    };
+
+    searchInput.addEventListener('input', applyFilters);
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            currentCategory = button.dataset.productCategory || 'todos';
+            updateButtonState();
+            applyFilters();
+        });
+    });
+
+    updateButtonState();
+    applyFilters();
+}
+
+function configurarFiltrosPortfolio() {
+    const categoryButtons = document.querySelectorAll('[data-portfolio-category]');
+    const projects = document.querySelectorAll('[data-portfolio-item]');
+    const emptyState = document.getElementById('portfolioEmptyState');
+
+    if (!categoryButtons.length || !projects.length) return;
+
+    let currentCategory = 'todos';
+
+    const updateButtonState = () => {
+        categoryButtons.forEach(button => {
+            const isActive = button.dataset.portfolioCategory === currentCategory;
+            button.style.background = isActive ? 'var(--orange-500)' : 'var(--bg-card)';
+            button.style.color = isActive ? 'white' : 'var(--text-primary)';
+            button.style.border = isActive ? 'none' : '1px solid var(--border-color)';
+        });
+    };
+
+    const applyFilter = () => {
+        let visibleItems = 0;
+
+        projects.forEach(project => {
+            const category = normalizeText(project.dataset.portfolioCategory);
+            const isVisible = currentCategory === 'todos' || category === normalizeText(currentCategory);
+            project.style.display = isVisible ? '' : 'none';
+            if (isVisible) visibleItems += 1;
+        });
+
+        if (emptyState) {
+            emptyState.style.display = visibleItems === 0 ? 'block' : 'none';
+        }
+    };
+
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            currentCategory = button.dataset.portfolioCategory || 'todos';
+            updateButtonState();
+            applyFilter();
+        });
+    });
+
+    updateButtonState();
+    applyFilter();
 }
 
 // Initialize floating chatbot
@@ -928,6 +1066,8 @@ document.addEventListener('DOMContentLoaded', function() {
     adicionarParallax();
     adicionarProgressoLeitura();
     adicionarRevelacaoScroll();
+    configurarBuscaFiltrosProdutos();
+    configurarFiltrosPortfolio();
     
     console.log('✅ Xerfan Tech Lab - Sistema inicializado com sucesso!');
 });
@@ -942,7 +1082,8 @@ window.loadComponent = loadComponent;
 class SearchSystem {
     constructor() {
         this.searchInput = document.getElementById('searchInput');
-        this.searchResults = document.getElementById('searchResults');
+        this.categoryButtons = document.querySelectorAll('[data-category]');
+        this.activeCategory = 'all';
         this.blogPosts = [];
         
         if (this.searchInput) {
@@ -1004,34 +1145,86 @@ class SearchSystem {
     setupEventListeners() {
         this.searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
-            this.performSearch(query);
+            this.performSearch(query, this.activeCategory);
         });
         
         // Search on Enter key
         this.searchInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 const query = e.target.value.toLowerCase().trim();
-                this.performSearch(query);
+                this.performSearch(query, this.activeCategory);
             }
         });
+
+        this.categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                this.activeCategory = button.dataset.category || 'all';
+                this.updateActiveCategoryButton();
+
+                const query = this.searchInput.value.toLowerCase().trim();
+                this.performSearch(query, this.activeCategory);
+            });
+        });
+
+        this.updateActiveCategoryButton();
+        this.showAllPosts();
     }
-    
-    performSearch(query) {
+
+    performSearch(query, category = 'all') {
         if (!query) {
-            this.showAllPosts();
+            this.showAllPosts(category);
             return;
         }
-        
+
         const filteredPosts = this.blogPosts.filter(post => {
             const searchText = `${post.title} ${post.description} ${post.category} ${post.tags.join(' ')}`.toLowerCase();
-            return searchText.includes(query);
+            const matchesQuery = searchText.includes(query);
+            const matchesCategory = this.isCategoryMatch(post, category);
+            return matchesQuery && matchesCategory;
         });
-        
+
         this.displayResults(filteredPosts, query);
     }
-    
-    showAllPosts() {
-        this.displayResults(this.blogPosts, '');
+
+    showAllPosts(category = 'all') {
+        const posts = category === 'all'
+            ? this.blogPosts
+            : this.blogPosts.filter(post => this.isCategoryMatch(post, category));
+
+        this.displayResults(posts, '');
+    }
+
+    isCategoryMatch(post, category) {
+        if (!category || category === 'all') {
+            return true;
+        }
+
+        const normalizedCategory = category
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+        const postCategory = post.category
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '');
+
+        return postCategory.includes(normalizedCategory);
+    }
+
+    updateActiveCategoryButton() {
+        this.categoryButtons.forEach(button => {
+            const isActive = (button.dataset.category || 'all') === this.activeCategory;
+            button.classList.toggle('bg-orange-500', isActive);
+            button.classList.toggle('text-white', isActive);
+            button.classList.toggle('hover:bg-orange-600', isActive);
+
+            button.classList.toggle('bg-gray-200', !isActive);
+            button.classList.toggle('dark:bg-gray-700', !isActive);
+            button.classList.toggle('text-gray-700', !isActive);
+            button.classList.toggle('dark:text-gray-300', !isActive);
+            button.classList.toggle('hover:bg-gray-300', !isActive);
+            button.classList.toggle('dark:hover:bg-gray-600', !isActive);
+        });
     }
     
     displayResults(posts, query) {
